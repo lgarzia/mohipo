@@ -7,4 +7,5 @@ Classes should be named Test<Something>.
 pytest​​ ​​-v​​ ​​tasks/test_four.py::test_asdict​ #just one
     --collect-only
     - verbose #Not -v after pytest then directory path
-    
+    - s #show print statements
+

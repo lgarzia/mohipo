@@ -1,9 +1,7 @@
-import pytest
-#TODO -> move this to test_fixtures
 
 import sys
 import os
-#base_package = r"C:\Users\lgarzia\Documents\apps\mohipo\test\conftest.py"
+import pytest
 
 @pytest.fixture()
 def add_mohipo_to_sys_path():

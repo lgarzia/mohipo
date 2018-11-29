@@ -29,6 +29,7 @@ def test_webdriver_returns_exec_path(add_mohipo_to_sys_path, a_driver):
 def test_webdriver_return_instance(add_mohipo_to_sys_path, a_driver):
     from mohipo import screenscraping as ss
     driver_instance = ss.get_browser(a_driver.name)
+    print(type(driver_instance))
     test_cond = isinstance(driver_instance, a_driver.driver_class)
     if test_cond:
         driver_instance.close() #clean-up launches browser
