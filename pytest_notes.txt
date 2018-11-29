@@ -3,5 +3,8 @@ Files should be named test_<something>.py or <something>_test.py.
 Methods and functions should be named test_<something>.
 Classes should be named Test<Something>.
 
+​​pytest​​ ./​​tests/screenscraping​​ ​ #single directory
 pytest​​ ​​-v​​ ​​tasks/test_four.py::test_asdict​ #just one
     --collect-only
+    - verbose #Not -v after pytest then directory path
+    
