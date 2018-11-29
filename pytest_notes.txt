@@ -1,0 +1,7 @@
+Via Brian Okken -> Python Testing
+Files should be named test_<something>.py or <something>_test.py.
+Methods and functions should be named test_<something>.
+Classes should be named Test<Something>.
+
+pytest​​ ​​-v​​ ​​tasks/test_four.py::test_asdict​ #just one
+    --collect-only
