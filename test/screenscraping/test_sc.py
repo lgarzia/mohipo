@@ -25,7 +25,7 @@ def test_webdriver_returns_exec_path(add_mohipo_to_sys_path, a_driver):
     driver_detail = ss.get_driver_details(a_driver.name)
     assert driver_detail['exec_path'].rsplit(sep, 4)[-4:] == ['mohipo', 'screenscraping', 'webdrivers', a_driver.exec_name]
 
-
+@pytest.mark.skip(reason=​"Initial test")
 def test_webdriver_return_instance(add_mohipo_to_sys_path, a_driver):
     from mohipo import screenscraping as ss
     driver_instance = ss.get_browser(a_driver.name)
@@ -34,3 +34,6 @@ def test_webdriver_return_instance(add_mohipo_to_sys_path, a_driver):
     if test_cond:
         driver_instance.close() #clean-up launches browser
     assert test_cond
+
+def test_mohipo_title(add_mohipo_to_sys_path, a_driver):
+    from mohipo import screenscraping as ss

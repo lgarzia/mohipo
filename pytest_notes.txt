@@ -9,3 +9,5 @@ pytest​​ ​​-v​​ ​​tasks/test_four.py::test_asdict​ #just one
     - verbose #Not -v after pytest then directory path
     - s #show print statements
 
+@pytest.mark.skip(reason=​"Initial test")
+
