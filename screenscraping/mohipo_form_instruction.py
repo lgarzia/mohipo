@@ -1,19 +1,12 @@
 from .form_instructions import ValueClass, FormInstructions
-from datetime import datetime, timedelta
-from pytz import timezone
-
+from .. utils.dates_util import get_last_range_date
+# get_last_range_date(self, max_days: int, timezone_:str='US/Central', fmt: str="%m/%d/%Y")
 
 class MohipoFormInstruction(FormInstructions):
 
     def __init__(self):
         super().__init__()
         self.max_days = 365
-
-    @staticmethod
-    def _gen_date_values(self, max_days: int):
-        cur_date = datetime.now(tz=timezone('US/Central'))  # assume time is central
-        fmt = "%m/%d/%Y"
-        return [(cur_date - timedelta(days=r)).strftime(fmt) for r in range(0, max_days)]
 
     def get_form_ids_values(self):
         """return iterable of ValueClass
@@ -22,7 +15,7 @@ class MohipoFormInstruction(FormInstructions):
         """
         return [ValueClass(
                 xpath="//*[@id='date']",
-                values=self._gen_date_values(self.max_days),
+                values=get_last_range_date(self.max_days, 'US/Central', '%m/%d/%Y'),
                 form_element_type='select',
                 allow_multiple=False)]
 
