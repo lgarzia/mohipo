@@ -12,8 +12,9 @@ Attributes:
 
 from typing import Union
 from selenium.webdriver import Chrome, Firefox
-from . import get_browser()
+from . import get_browser
 BROWSER_VERSION = 'chrome'
+
 def get_url(webdriver_instance:Union[Chrome, Firefox], url_to_scrape:str)->Union[Chrome, Firefox]:
     webdriver_instance.get(url_to_scrape)
 

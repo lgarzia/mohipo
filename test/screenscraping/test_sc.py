@@ -2,6 +2,8 @@ import pytest
 from selenium.webdriver import Chrome, Firefox
 from os import sep
 from collections import namedtuple
+
+
 Driver = namedtuple('Driver', ['name', 'exec_name', 'driver_class'], verbose=True)
 drivers_to_try = [Driver('chrome', 'chromedriver.exe', Chrome), Driver('firefox', 'geckodriver.exe', Firefox)]
 
@@ -25,7 +27,8 @@ def test_webdriver_returns_exec_path(add_mohipo_to_sys_path, a_driver):
     driver_detail = ss.get_driver_details(a_driver.name)
     assert driver_detail['exec_path'].rsplit(sep, 4)[-4:] == ['mohipo', 'screenscraping', 'webdrivers', a_driver.exec_name]
 
-@pytest.mark.skip(reason=​"Initial test")
+
+@pytest.mark.skip(reason="long_test")
 def test_webdriver_return_instance(add_mohipo_to_sys_path, a_driver):
     from mohipo import screenscraping as ss
     driver_instance = ss.get_browser(a_driver.name)
@@ -35,5 +38,15 @@ def test_webdriver_return_instance(add_mohipo_to_sys_path, a_driver):
         driver_instance.close() #clean-up launches browser
     assert test_cond
 
-def test_mohipo_title(add_mohipo_to_sys_path, a_driver):
+#Test form entry/instructions
+#
+@pytest.mark.skip(reason="not built")
+def test_mohipo_title(add_mohipo_to_sys_path):
     from mohipo import screenscraping as ss
+    #TODO -> add test to evaluate title
+
+@pytest.mark.instr
+def test_mohipo_form_instruction(add_mohipo_to_sys_path):
+    from mohipo.screenscraping.mohipo_form_instruction import MohipoFormInstruction
+    m = MohipoFormInstruction()
+    assert m.max_days == 365
