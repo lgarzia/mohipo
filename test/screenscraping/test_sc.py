@@ -45,8 +45,56 @@ def test_mohipo_title(add_mohipo_to_sys_path):
     from mohipo import screenscraping as ss
     #TODO -> add test to evaluate title
 
-@pytest.mark.instr
-def test_mohipo_form_instruction(add_mohipo_to_sys_path):
+#************************************************************
+
+@pytest.fixture()
+def a_instr(add_mohipo_to_sys_path):
     from mohipo.screenscraping.mohipo_form_instruction import MohipoFormInstruction
     m = MohipoFormInstruction()
-    assert m.max_days == 365
+    return m
+
+@pytest.mark.instr
+def test_mohipo_form_instruction_max_days(a_instr):
+    assert a_instr.max_days == 365
+
+@pytest.fixture()
+def a_scraper(add_mohipo_to_sys_path):
+    from mohipo.screenscraping.mohipo_form_instruction import MohipoFormInstruction
+    from mohipo.screenscraping.scraper import Scraper
+    m = MohipoFormInstruction()
+    s = Scraper(m)
+    return s
+
+@pytest.mark.scrapper
+def test_scraper_single_forms_list(a_scraper):
+    assert len(a_scraper._form_ids_base[0].values) == 365
+
+@pytest.mark.scrapper
+def test_scraper_single_entries(a_scraper):
+    assert a_scraper._get_single_entries_for_form() == []
+
+@pytest.mark.scrapper
+def test_scraper_multiple_entries(a_scraper):
+    assert len(a_scraper._get_multiple_entries_for_form()) == 1
+
+@pytest.mark.scrapper
+def test_scraper_expand_values(a_scraper):
+    exp_value_class = a_scraper._get_multiple_entries_for_form()[0]
+    expanded_list = a_scraper._expand_value_class(exp_value_class)
+    #print(expanded_list[:2])
+    assert len(expanded_list) == 365
+
+@pytest.mark.scrapper
+def test_scraper_merge_values(a_scraper):
+    se = a_scraper._get_single_entries_for_form()
+    exp_value_class = a_scraper._get_multiple_entries_for_form()[0]
+    expanded_list = a_scraper._expand_value_class(exp_value_class)
+    merge_list = a_scraper._merge_single_with_expanded_vc(se, expanded_list)
+    #print(merge_list[:2])
+    assert len(merge_list) == 365
+
+@pytest.mark.scrapper
+def test_scraper_build_exec_plan(a_scraper):
+    out = a_scraper._build_exec_plan()
+    print(out[:2])
+    assert len(out) == 365

@@ -19,7 +19,7 @@ class Scraper:
         self._form_ids_base = instructions.get_form_ids_values()
         self._total_instr = []
 
-    def _get_single_entries_for_form(self):
+    def _get_single_entries_for_form(self)->List[ValueClass]:
         return [v for v in self._form_ids_base if v.values is str or v.allow_multiple is True]
 
     def _get_multiple_entries_for_form(self):
@@ -34,22 +34,26 @@ class Scraper:
         make_value = make_value_class(xpath, form_element_type, False)
         return [make_value(v) for v in values]
 
-    def _build_combination(self, entries: List[List[ValueClass]])->List[ValueClass]:
-        return combinations(*entries)
+    def _merge_single_with_expanded_vc(self, sl: List[ValueClass], xl: List[ValueClass])->List[List[ValueClass]]:
+        def b(s1, vc):
+            if sl:
+                return sl.extend(vc)
+            else:
+                return [vc]
+        return [b(sl,vc) for vc in xl]
 
     def _build_exec_plan(self):
         # Step 1 -> extract isolate single value from multiple values
-        single_entries = self._get_single_entries_for_form(self)
+        single_entries = self._get_single_entries_for_form()
         # Step 2 -> extract multiple entries
         multiple_entries = self._get_multiple_entries_for_form()
+        #TODO -> scale up if multiple single dropdowns - not a problem for now to solve
         # Step 3 -> extract to list ValueClass
-        #Return List of List
-        exploded_entries = [self._expand_value_class(vc) for vc in multiple_entries]
-        combined_entries = self._build_combination(*exploded_entries)
+        exploded_entries = self._expand_value_class(multiple_entries[0]) #TODO-> clean_up
         #Step 4 put together everything
-        final_out_put = [t.extend(single_entries) for t in combined_entries]
-
+        final_out_put = self._merge_single_with_expanded_vc(single_entries, exploded_entries)
         return final_out_put
 
-
+    def __str__(self):
+        return 'a_string' #TODO
 

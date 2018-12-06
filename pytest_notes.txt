@@ -17,3 +17,5 @@ pytest -v test/screenscraping/test_sc.py::test_webdriver_return_instance[firefox
 
 @pytest.mark.smoke
 pytest​​ ​​-v​​ ​​-m​​ ​​smoke​​ ​​test_api_exceptions.py​
+
+The -s flag allows print statements
