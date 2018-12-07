@@ -40,10 +40,7 @@ def test_webdriver_return_instance(add_mohipo_to_sys_path, a_driver):
 
 #Test form entry/instructions
 #
-@pytest.mark.skip(reason="not built")
-def test_mohipo_title(add_mohipo_to_sys_path):
-    from mohipo import screenscraping as ss
-    #TODO -> add test to evaluate title
+
 
 #************************************************************
 
@@ -61,8 +58,11 @@ def test_mohipo_form_instruction_max_days(a_instr):
 def a_scraper(add_mohipo_to_sys_path):
     from mohipo.screenscraping.mohipo_form_instruction import MohipoFormInstruction
     from mohipo.screenscraping.scraper import Scraper
-    m = MohipoFormInstruction()
-    s = Scraper(m)
+    from mohipo import screenscraping as ss
+    browser = ss.get_browser('chrome')
+    url = 'https://www.mshp.dps.missouri.gov/HP68/SearchAction'
+    frm_instr = MohipoFormInstruction()
+    s = Scraper(url, frm_instr, browser)
     return s
 
 @pytest.mark.scrapper
@@ -98,3 +98,23 @@ def test_scraper_build_exec_plan(a_scraper):
     out = a_scraper._build_exec_plan()
     print(out[:2])
     assert len(out) == 365
+
+@pytest.mark.scrapper
+def test_form_population(a_scraper):
+    assert a_scraper._instructions.get_submit_id() == "//input[@type='submit']"
+
+@pytest.mark.skip()
+@pytest.mark.webscrapper
+def test_mohipo_title(a_scraper):
+    a_scraper._navigate_to_url()
+    assert a_scraper.browser.title == 'Missouri State Highway Patrol - Crash Reports'
+
+
+@pytest.mark.webscrapper
+def test_form_population(a_scraper):
+    try:
+        a_scraper._populate_form()
+        assert True == True
+    except:
+        assert False == True
+

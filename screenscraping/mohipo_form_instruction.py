@@ -20,5 +20,5 @@ class MohipoFormInstruction(FormInstructions):
                 allow_multiple=False)]
 
     def get_submit_id(self):
-        super().get_submit_id()  # use default
+        return super().get_submit_id()  # use default
 

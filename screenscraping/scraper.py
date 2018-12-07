@@ -2,9 +2,10 @@
 Module defines Scraper Base Class
 """
 from .form_instructions import FormInstructions, ValueClass
-from itertools import combinations
+from selenium.webdriver import Chrome, Firefox
+from selenium.webdriver.support.ui import Select
 from toolz import curry
-from typing import List
+from typing import List, Union
 
 #class ValueClass(NamedTuple):
 #    xpath: str
@@ -12,12 +13,18 @@ from typing import List
 #    form_element_type: str
 #    allow_multiple: bool
 
+def scrape_crash_report(html_:str, storage_path:str)->None:
+    pass
+
 class Scraper:
 
-    def __init__(self, instructions: FormInstructions):
+    def __init__(self, url:str, instructions: FormInstructions, browser:Union[Chrome, Firefox]):
         self._instructions = instructions
         self._form_ids_base = instructions.get_form_ids_values()
         self._total_instr = []
+        self.browser = browser
+        self.url = url
+        self.final_instruction_plan = self._build_exec_plan()
 
     def _get_single_entries_for_form(self)->List[ValueClass]:
         return [v for v in self._form_ids_base if v.values is str or v.allow_multiple is True]
@@ -54,6 +61,25 @@ class Scraper:
         final_out_put = self._merge_single_with_expanded_vc(single_entries, exploded_entries)
         return final_out_put
 
+    def _navigate_to_url(self):
+        self.browser.get(self.url)
+
+    def _populate_form(self):
+        self._navigate_to_url()
+        for vc in self.final_instruction_plan[-1]:
+            if vc.form_element_type == 'select':
+                if vc.allow_multiple:
+                    #TODO -> build this
+                    pass
+                else:
+                    element = Select(self.browser.find_element_by_xpath(vc.xpath))
+                    element.select_by_value(vc.values)
+            #Completed form entry -> Bare bones for scenario 1
+            print(self._instructions.get_submit_id())
+            submit = self.browser.find_element_by_xpath(self._instructions.get_submit_id())
+            submit.click()
+            html_ = self.browser.page_source
+            #scrape_table(html)
     def __str__(self):
         return 'a_string' #TODO
 
