@@ -6,6 +6,7 @@ from selenium.webdriver import Chrome, Firefox
 from selenium.webdriver.support.ui import Select
 from toolz import curry
 from typing import List, Union
+from bs4 import BeautifulSoup
 
 #class ValueClass(NamedTuple):
 #    xpath: str
@@ -13,8 +14,10 @@ from typing import List, Union
 #    form_element_type: str
 #    allow_multiple: bool
 
-def scrape_crash_report(html_:str, storage_path:str)->None:
-    pass
+def _scrape_make_soup(html_:str, storage_path:str)->None:
+    soup = BeautifulSoup(str)
+    return soup
+
 
 class Scraper:
 
