@@ -122,7 +122,6 @@ def test_form_population(a_scraper):
 @pytest.mark.parse
 def test_make_soup():
     from bs4 import BeautifulSoup
-    from bs4 import El
     fpath = r"C:\Users\lgarzia\Documents\apps\mohipo\test\screenscraping\example_crash_report.html"
     with open(fpath, 'r', encoding='utf-8') as f:
         html_ = f.read()
@@ -132,62 +131,39 @@ def test_make_soup():
 
     #Next function -> extract table
     table_ = soup.select_one('table')
+    #TODO -> check if "no data"
     table_.select('tr')
-    tpath = r"C:\Users\lgarzia\Documents\apps\mohipo\test\screenscraping\table_example.html"
+    th = table_.select('th')
+    headers_ = [t.text.strip() for t in th]
+    trs = table_.select('tr')[1:] #ignore header row
+    #Loop through each row
+    tr_ = trs[0]
+    tds_ = tr_.select('td')#Pass through function -> create
+    import sys
+    sys.path.append(r"C:\Users\lgarzia\Documents\apps")
+    from mohipo.screenscraping.extractions import extract_mohipo_report
+    row =  extract_mohipo_report(data_row = tds_)
+    base_report = []
+    for r in trs:
+        rc = extract_mohipo_report(data_row = tds_)
+        base_report.append(rc)
+    len(base_report)
 
-    from typing import NamedTuple, Union
-    import datetime
-    class ReportRecord(NamedTuple):
-        rpt_id: int
-        rpt_url: str
-        name: [None, str]
-        age: Union[None, int]
-        city: [None, str]
-        state: [None, str]
-        injury_status: [None, str]
-        timestamp: [None, datetime.datetime]
-        crash_county: [None, str]
-        crash_location: [None, str]
-        troop:[None, str]
-
-
-
-    with open(tpath, 'w', encoding='utf-8') as f:
-        f.write(str(table_.prettify(encoding='utf-8')))
-        table_.get()
-        th = table_.select('th')
-        headers_ = [t.text.strip() for t in th]
-        trs = table_.select('tr')[1:] #ignore header row
-        tr_ = trs[0]
-        tds_ = tr_.select('td')
-        #isolate link to view report
-        #need a_href & isolate ACC_RPT_NUM -> key to join on
-        rpt_url = tds_[0].find('a').get('href')
-        regex = '.*ACC_RPT_NUM=(?P<rpt_name>.*)$'
-        import re
-        m = re.match(regex, rpt_url)
-        rpt_id = m.group('rpt_name')
-        name = tds_[1].text
-#        age: int
-        age = int(tds_[2].text) if  tds_[2].text != '' else None
-        city_state = tds_[3].text if tds_[3].text != '' else None
-        if city_state:
-            city, state = [t.strip() for t in city_state.split(",")]
-        else:
-            city, state = [None,None]
-        injury_status = tds_[4].text if tds_[4] !='' else None
-#        injury_status: str
-                        tds_[5].text #date
-                        tds_[6].text #time
-                        pdte = '%m/%d/%Y'
-                        pdte_time = '%m/%d/%Y_%I:%M%p'
-                        import datetime
-                        from pytz import timezone
-                        tz_u = datetime.datetime.strptime(tds_[5].text+'_'+tds_[6].text,pdte_time)
-                        from pytz import timezone
-                        timestamp = timezone('US/Central').localize(tz_u)
-                        #TODO -> wrap condition checks for missing date/times scenarios
-
-                        crash_county = tds_[7].text
-                        crash_location = tds_[7].text
-                        troop = tds_[7].text
+    #next step is linking to anchor
+    test_url_no_data = 'https://www.mshp.dps.missouri.gov/HP68/AccidentDetailsAction?ACC_RPT_NUM=170781483'
+    test_url = 'https://www.mshp.dps.missouri.gov/HP68/AccidentDetailsAction?ACC_RPT_NUM=180734111'
+    import requests
+    from bs4 import BeautifulSoup
+    req = requests.get(test_url)
+    soup_2 = BeautifulSoup(req.text,features='lxml')
+    tables_ = soup_2.find_all('table')
+    len(tables_)
+    crash_info = tables_[0]
+    #TODO -> abstract out looping through table
+    trs = crash_info.select('tr')[1:]  # ignore header row
+    len(trs)
+    tds_ = trs[0].select('td')
+    import sys
+    sys.path.append(r"C:\Users\lgarzia\Documents\apps")
+    from mohipo.screenscraping.extractions import extract_mohipo_crash_info
+    r = extract_mohipo_crash_info(tds_)
