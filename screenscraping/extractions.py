@@ -34,6 +34,22 @@ class CrashInfoRecord(NamedTuple):
     troop: Union[None, str]
 
 
+class VehicleInfoRecord(NamedTuple):
+    rpt_id: int
+    veh_num: int
+    veh_description: str
+    veh_damage: str
+    veh_disposition: str
+    veh_driver_name: str
+    veh_driver_gender: str
+    veh_driver_age: int
+    veh_safety_device: str
+    veh_driver_city: str
+    veh_driver_state: str
+    veh_driver_insurance: str
+    veh_direction: str
+
+
 #TODO -> split into more specific functions
 def _process_date_fields(date_tag:Tag, time_tag:Tag,tz:str='US/Central',
                          date_fmt:str='%m/%d/%Y', datetime_fmt:str='%m/%d/%Y_%I:%M%p'
@@ -58,6 +74,7 @@ def _process_text_or_none(t:Tag, conv: Callable=None)->Union[None, str, Number]:
     field = t.text if t.text != '' else None
     return conv(field) if conv else field
 
+#TODO -> refactor using helper functions
 def extract_mohipo_report(data_row: List[Tag])->ReportRecord:
     """Given list of TD Tags"""
     # isolate link to view report
@@ -98,7 +115,7 @@ def extract_mohipo_report(data_row: List[Tag])->ReportRecord:
 
 def extract_mohipo_crash_info(data_row: List[Tag])->CrashInfoRecord:
     investigated_by = _process_text_or_none(data_row[0])
-    rpt_id = data_row[1].text  # Key
+    rpt_id = int(data_row[1].text)  # Key
     gps_latitude = _process_text_or_none(data_row[2], float)
     gps_longitude = _process_text_or_none(data_row[3], float)  # TODO-> function extract text or None
     timestamp = _process_date_fields(data_row[4], data_row[5])
@@ -115,3 +132,35 @@ def extract_mohipo_crash_info(data_row: List[Tag])->CrashInfoRecord:
                            troop=troop
                            )
 
+#TODO -> leverage a data validator library (changing schemas) -> simple (check len)
+def extract_mohipo_vehicle_info(data_row: List[Tag], rpt_id:int)->VehicleInfoRecord:
+    veh_num = int(data_row[0].text)
+    veh_description = _process_text_or_none(data_row[1])
+    veh_damage = _process_text_or_none(data_row[2])
+    veh_disposition = _process_text_or_none(data_row[3])
+    veh_driver_name = _process_text_or_none(data_row[4])
+    veh_driver_gender = _process_text_or_none(data_row[5])
+    veh_driver_age =  _process_text_or_none(data_row[6], int)
+    veh_safety_device = _process_text_or_none(data_row[7])
+    veh_location = _process_text_or_none(data_row[8])
+    if veh_location:
+        veh_driver_city, veh_driver_state = veh_location.split(',')
+    else:
+        veh_driver_city, veh_driver_state = None, None
+    veh_driver_insurance = _process_text_or_none(data_row[9])
+    veh_direction = _process_text_or_none(data_row[10])
+
+    return VehicleInfoRecord(
+        rpt_id=rpt_id,
+        veh_num=veh_num,
+        veh_description=veh_description,
+        veh_damage=veh_damage,
+        veh_disposition=veh_disposition,
+        veh_driver_name=veh_driver_name,
+        veh_driver_gender=veh_driver_gender,
+        veh_driver_age=veh_driver_age,
+        veh_safety_device=veh_safety_device,
+        veh_driver_city=veh_driver_city.strip(),
+        veh_driver_state=veh_driver_state.strip(),
+        veh_driver_insurance=veh_driver_insurance,
+        veh_direction=veh_direction)

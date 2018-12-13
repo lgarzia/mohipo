@@ -165,5 +165,14 @@ def test_make_soup():
     tds_ = trs[0].select('td')
     import sys
     sys.path.append(r"C:\Users\lgarzia\Documents\apps")
-    from mohipo.screenscraping.extractions import extract_mohipo_crash_info
+    from mohipo.screenscraping.extractions import extract_mohipo_crash_info, extract_mohipo_vehicle_info
     r = extract_mohipo_crash_info(tds_)
+
+    #key is report id and veh_#
+    rpt_id = r.rpt_id
+    veh_info = tables_[1]
+    trs = veh_info.select('tr')[1:]  # ignore header row
+    len(trs)
+    tds_ = trs[0].select('td')
+    vr  = extract_mohipo_vehicle_info(tds_, rpt_id)
+    vr
