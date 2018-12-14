@@ -37,24 +37,44 @@ class CrashInfoRecord(NamedTuple):
 class VehicleInfoRecord(NamedTuple):
     rpt_id: int
     veh_num: int
-    veh_description: str
-    veh_damage: str
-    veh_disposition: str
-    veh_driver_name: str
-    veh_driver_gender: str
-    veh_driver_age: int
-    veh_safety_device: str
-    veh_driver_city: str
-    veh_driver_state: str
-    veh_driver_insurance: str
-    veh_direction: str
+    veh_description: Union[None,str]
+    veh_damage: Union[None,str]
+    veh_disposition: Union[None,str]
+    veh_driver_name: Union[None,str]
+    veh_driver_gender: Union[None,str]
+    veh_driver_age: Union[None,int]
+    veh_safety_device: Union[None,str]
+    veh_driver_city: Union[None,str]
+    veh_driver_state: Union[None,str]
+    veh_driver_insurance: Union[None,str]
+    veh_direction: Union[None,str]
 
+
+class InjuryInfoRecord(NamedTuple):
+    rpt_id: int
+    veh_num: int
+    name: Union[None, str]
+    gender: Union[None, str]
+    age: Union[None, int]
+    injury_type: Union[None, str]
+    safety_device: Union[None, str]
+    city: Union[None, str]
+    state: Union[None, str]
+    involvement: Union[None, str]
+    disposition: Union[None, str]
+
+
+class MiscInfoRecord(NamedTuple):
+    rpt_id: int
+    misc_information: str
 
 #TODO -> split into more specific functions
+
+
 def _process_date_fields(date_tag:Tag, time_tag:Tag,tz:str='US/Central',
                          date_fmt:str='%m/%d/%Y', datetime_fmt:str='%m/%d/%Y_%I:%M%p'
                          )->Union[None, datetime.datetime]:
-    if date_tag !='':
+    if date_tag != '':
         pdte = date_fmt
         pdte_time = datetime_fmt
         date_ = date_tag.text
@@ -69,6 +89,7 @@ def _process_date_fields(date_tag:Tag, time_tag:Tag,tz:str='US/Central',
         return timestamp
     else:
         return None
+
 
 def _process_text_or_none(t:Tag, conv: Callable=None)->Union[None, str, Number]:
     field = t.text if t.text != '' else None
@@ -164,3 +185,40 @@ def extract_mohipo_vehicle_info(data_row: List[Tag], rpt_id:int)->VehicleInfoRec
         veh_driver_state=veh_driver_state.strip(),
         veh_driver_insurance=veh_driver_insurance,
         veh_direction=veh_direction)
+
+
+def extract_mohipo_injury_info(data_row: List[Tag], rpt_id: int) -> InjuryInfoRecord:
+    veh_num = int(data_row[0].text)
+    name = _process_text_or_none(data_row[1])
+    gender = _process_text_or_none(data_row[2])
+    age = _process_text_or_none(data_row[3], int)
+    injury_type = _process_text_or_none(data_row[4])
+    safety_device = _process_text_or_none(data_row[5])
+    location = _process_text_or_none(data_row[6])
+    if location:
+        city, state = location.split(',')
+    else:
+        city, state = None, None
+    involvement = _process_text_or_none(data_row[7])
+    disposition = _process_text_or_none(data_row[8])
+
+    return InjuryInfoRecord(
+        rpt_id=rpt_id,
+        veh_num=veh_num,
+        name=name,
+        gender=gender,
+        age=age,
+        injury_type=injury_type,
+        safety_device=safety_device,
+        city=city,
+        state=state,
+        involvement=involvement,
+        disposition=disposition
+        )
+
+
+def extract_mohipo_misc_info(data_row: List[Tag], rpt_id: int) -> InjuryInfoRecord:
+    misc_information = data_row[0].text
+    return MiscInfoRecord(
+                rpt_id=rpt_id,
+                misc_information=misc_information)

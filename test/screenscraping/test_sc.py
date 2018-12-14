@@ -129,6 +129,20 @@ def test_make_soup():
     soup =  BeautifulSoup(html_, features='lxml')
     assert isinstance(soup, BeautifulSoup)
 
+    #TODO -> check if results found
+    fpath = r"C:\Users\lgarzia\Documents\apps\mohipo\test\screenscraping\example_crash_report_no_results_found.html"
+    with open(fpath, 'r', encoding='utf-8') as f:
+        html_ = f.read()
+
+    soup =  BeautifulSoup(html_, features='lxml')
+    table_ = soup.select_one('table')
+    if table_:
+        pass#Scrape
+    else:
+        print('No Data - skipping')
+    len(table_)
+
+
     #Next function -> extract table
     table_ = soup.select_one('table')
     #TODO -> check if "no data"
@@ -150,14 +164,14 @@ def test_make_soup():
     len(base_report)
 
     #next step is linking to anchor
-    test_url_no_data = 'https://www.mshp.dps.missouri.gov/HP68/AccidentDetailsAction?ACC_RPT_NUM=170781483'
     test_url = 'https://www.mshp.dps.missouri.gov/HP68/AccidentDetailsAction?ACC_RPT_NUM=180734111'
     import requests
     from bs4 import BeautifulSoup
     req = requests.get(test_url)
     soup_2 = BeautifulSoup(req.text,features='lxml')
     tables_ = soup_2.find_all('table')
-    len(tables_)
+    len(tables_) #TODO -> test condition here for empty pages(how to track?)
+    #Table 1
     crash_info = tables_[0]
     #TODO -> abstract out looping through table
     trs = crash_info.select('tr')[1:]  # ignore header row
@@ -165,9 +179,12 @@ def test_make_soup():
     tds_ = trs[0].select('td')
     import sys
     sys.path.append(r"C:\Users\lgarzia\Documents\apps")
-    from mohipo.screenscraping.extractions import extract_mohipo_crash_info, extract_mohipo_vehicle_info
-    r = extract_mohipo_crash_info(tds_)
+    from mohipo.screenscraping.extractions import extract_mohipo_crash_info, \
+        extract_mohipo_vehicle_info, extract_mohipo_injury_info, \
+        extract_mohipo_misc_info
 
+    r = extract_mohipo_crash_info(tds_)
+    #table 2
     #key is report id and veh_#
     rpt_id = r.rpt_id
     veh_info = tables_[1]
@@ -175,4 +192,34 @@ def test_make_soup():
     len(trs)
     tds_ = trs[0].select('td')
     vr  = extract_mohipo_vehicle_info(tds_, rpt_id)
-    vr
+
+    #table 3
+    inj_info = tables_[2]
+    trs = inj_info.select('tr')[1:]  # ignore header row
+    len(trs)
+    tds_ = trs[0].select('td')
+    vr = extract_mohipo_injury_info(tds_, rpt_id)
+
+    #table 4
+    misc_info = tables_[3]
+    trs = misc_info.select('tr')  # only one row final table
+    len(trs)
+    tds_ = trs[0].select('td')
+    mir = extract_mohipo_misc_info(tds_, rpt_id)
+
+    #Check in table in empty
+    test_url_no_data = 'https://www.mshp.dps.missouri.gov/HP68/AccidentDetailsAction?ACC_RPT_NUM=170781483'
+    req = requests.get(test_url_no_data)
+    soup_2 = BeautifulSoup(req.text,features='lxml')
+    tables_ = soup_2.find_all('table')
+    len(tables_) #TODO -> test condition here for empty pages(how to track?)
+    if len(tables_) <= 1:
+        trs = tables_[0].select('tr')  # only one row final table
+        tds_ = trs[0].select('td')
+        if tds_[0].text.strip() == 'NO CRASH DETAILS':
+            print('No details')
+        else:
+            pass
+            #TODO -> send for processing?
+        #test if no crash report
+
