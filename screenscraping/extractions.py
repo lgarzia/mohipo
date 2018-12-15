@@ -68,9 +68,24 @@ class MiscInfoRecord(NamedTuple):
     rpt_id: int
     misc_information: str
 
+
+def _is_empty_result(tables_:List[Tag])->bool:
+    num_tables = len(tables_)
+    print(f"number of table {num_tables}")
+    if num_tables == 0:
+        return True #Empty Search Results -> No Tables
+    if num_tables > 1:
+        return False
+    trs = tables_[0].select('tr') #first row header if valid
+    tds_ = trs[0].select('td')
+    if tds_:
+        if tds_[0].text.strip() == 'NO CRASH DETAILS':
+            return True
+        else:
+            return False
+    return False #Default
+
 #TODO -> split into more specific functions
-
-
 def _process_date_fields(date_tag:Tag, time_tag:Tag,tz:str='US/Central',
                          date_fmt:str='%m/%d/%Y', datetime_fmt:str='%m/%d/%Y_%I:%M%p'
                          )->Union[None, datetime.datetime]:
