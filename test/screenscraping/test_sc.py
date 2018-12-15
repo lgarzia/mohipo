@@ -5,6 +5,7 @@ from collections import namedtuple
 import requests
 import datetime
 import pytz
+from bs4 import BeautifulSoup
 
 Driver = namedtuple('Driver', ['name', 'exec_name', 'driver_class'], verbose=True)
 drivers_to_try = [Driver('chrome', 'chromedriver.exe', Chrome), Driver('firefox', 'geckodriver.exe', Firefox)]
@@ -192,7 +193,6 @@ def test_extract_mohipo_all_report_record(a_crash_report, add_mohipo_to_sys_path
 
 @pytest.fixture()
 def a_crash_report_detail():
-    from bs4 import BeautifulSoup
     #TODO - replace with relative link
     fpath = r"C:\Users\lgarzia\Documents\apps\mohipo\test\screenscraping\example_crash_report_details.html"
     with open(fpath, 'r', encoding='utf-8') as f:
@@ -246,37 +246,53 @@ def test_extract_mohipo_detail_veh_info_record(a_crash_report_detail, add_mohipo
     assert er == r
 
 
+def test_extract_mohipo_detail_inj_info_record(a_crash_report_detail, add_mohipo_to_sys_path):
+    from mohipo.screenscraping.extractions import extract_mohipo_injury_info, InjuryInfoRecord
+    tables_ = a_crash_report_detail.find_all('table')
+    _info = tables_[2]
+    trs = _info.select('tr')[1:]  # ignore header row
+    tds_ = trs[0].select('td')
+    rpt_id = 10
+    r = extract_mohipo_injury_info(tds_, rpt_id)
+    er = InjuryInfoRecord(rpt_id=10,
+                          veh_num=1,
+                          name='BANDA, MARIA',
+                          gender='FEMALE',
+                          age=47,
+                          injury_type='MODERATE',
+                          safety_device='YES',
+                          city='HOLCOMB',
+                          state=' MO',
+                          involvement='DRIVER',
+                          disposition='TAKEN BY AMBULANCE TO SOUTHEAST HEALTH OF STODDARD \n      COUNTY')
+    assert r == er
 
-    #     , extract_mohipo_injury_info, \
-    #     extract_mohipo_misc_info
+def test_extract_mohipo_detail_misc_info_record(a_crash_report_detail, add_mohipo_to_sys_path):
+    from mohipo.screenscraping.extractions import extract_mohipo_misc_info, MiscInfoRecord
+    tables_ = a_crash_report_detail.find_all('table')
+    _info = tables_[3]
+    trs = _info.select('tr')  # only on row
+    tds_ = trs[0].select('td')
+    rpt_id = 10
+    r = extract_mohipo_misc_info(tds_, rpt_id)
+    print(r)
+    assert isinstance(r, MiscInfoRecord) #Painful lining up multiline test
 
-    # #table 3
-    # inj_info = tables_[2]
-    # trs = inj_info.select('tr')[1:]  # ignore header row
-    # len(trs)
-    # tds_ = trs[0].select('td')
-    # vr = extract_mohipo_injury_info(tds_, rpt_id)
-    #
-    # #table 4
-    # misc_info = tables_[3]
-    # trs = misc_info.select('tr')  # only one row final table
-    # len(trs)
-    # tds_ = trs[0].select('td')
-    # mir = extract_mohipo_misc_info(tds_, rpt_id)
-    #
-    # #Check in table in empty
+@pytest.fixture()
+def a_crash_report_detail_empty():
+    fpath = r"C:\Users\lgarzia\Documents\apps\mohipo\test\screenscraping\example_crash_report_details_no_results.html"
+    with open(fpath, 'r', encoding='utf-8') as f:
+        html_ = f.read()
+    soup = BeautifulSoup(html_, features='lxml')
+    return soup
+
+def test_extract_mohipo_detail_no_record(a_crash_report_detail_empty, add_mohipo_to_sys_path):
+    from mohipo.screenscraping.extractions import _is_empty_result
     # test_url_no_data = 'https://www.mshp.dps.missouri.gov/HP68/AccidentDetailsAction?ACC_RPT_NUM=170781483'
-    # req = requests.get(test_url_no_data)
-    # soup_2 = BeautifulSoup(req.text,features='lxml')
-    # tables_ = soup_2.find_all('table')
-    # len(tables_) #TODO -> test condition here for empty pages(how to track?)
-    # if len(tables_) <= 1:
-    #     trs = tables_[0].select('tr')  # only one row final table
-    #     tds_ = trs[0].select('td')
-    #     if tds_[0].text.strip() == 'NO CRASH DETAILS':
-    #         print('No details')
-    #     else:
-    #         pass
-    #         #TODO -> send for processing?
-    #     #test if no crash report
-    #
+    soup = a_crash_report_detail_empty
+    tables_ = soup.find_all('table')
+    assert _is_empty_result(tables_) is True
+
+#TODO -> Integration test using Request
+#Next steps -> Loop through all details reports
+#Built multithread for Now - Asynchio Latter
