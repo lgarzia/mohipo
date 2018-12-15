@@ -2,7 +2,9 @@ import pytest
 from selenium.webdriver import Chrome, Firefox
 from os import sep
 from collections import namedtuple
-
+import requests
+import datetime
+import pytz
 
 Driver = namedtuple('Driver', ['name', 'exec_name', 'driver_class'], verbose=True)
 drivers_to_try = [Driver('chrome', 'chromedriver.exe', Chrome), Driver('firefox', 'geckodriver.exe', Firefox)]
@@ -158,8 +160,6 @@ def test_invalid_search_result(a_empty_crash_report, add_mohipo_to_sys_path):
     # table_ = soup.select_one('table')
 @pytest.mark.parse
 def test_extract_mohipo_report_record(a_crash_report, add_mohipo_to_sys_path):
-    import datetime
-    import pytz
     from mohipo.screenscraping.extractions import extract_mohipo_report, ReportRecord
     table_ = a_crash_report.select('table')
     trs = table_[0].select('tr')[1:] #ignore header row
@@ -190,37 +190,66 @@ def test_extract_mohipo_all_report_record(a_crash_report, add_mohipo_to_sys_path
     results = extract_all_rows(table_, extract_mohipo_report)
     assert len(results) == 57
 
-    #
-    # #next step is linking to anchor
-    # test_url = 'https://www.mshp.dps.missouri.gov/HP68/AccidentDetailsAction?ACC_RPT_NUM=180734111'
-    # import requests
-    # from bs4 import BeautifulSoup
-    # req = requests.get(test_url)
-    # soup_2 = BeautifulSoup(req.text,features='lxml')
-    # tables_ = soup_2.find_all('table')
-    # len(tables_) #TODO -> test condition here for empty pages(how to track?)
-    # #Table 1
-    # crash_info = tables_[0]
-    # #TODO -> abstract out looping through table
-    # trs = crash_info.select('tr')[1:]  # ignore header row
-    # len(trs)
-    # tds_ = trs[0].select('td')
-    # import sys
-    # sys.path.append(r"C:\Users\lgarzia\Documents\apps")
-    # from mohipo.screenscraping.extractions import extract_mohipo_crash_info, \
-    #     extract_mohipo_vehicle_info, extract_mohipo_injury_info, \
+@pytest.fixture()
+def a_crash_report_detail():
+    from bs4 import BeautifulSoup
+    #TODO - replace with relative link
+    fpath = r"C:\Users\lgarzia\Documents\apps\mohipo\test\screenscraping\example_crash_report_details.html"
+    with open(fpath, 'r', encoding='utf-8') as f:
+        html_ = f.read()
+    soup = BeautifulSoup(html_, features='lxml')
+    return soup
+
+@pytest.mark.parse
+def test_extract_mohipo_detail_crash_info_record(a_crash_report_detail, add_mohipo_to_sys_path):
+    from mohipo.screenscraping.extractions import extract_mohipo_crash_info, CrashInfoRecord
+    tables_ = a_crash_report_detail.find_all('table')
+    crash_info = tables_[0]
+    trs = crash_info.select('tr')[1:]  # ignore header row
+    tds_ = trs[0].select('td')
+    r = extract_mohipo_crash_info(tds_)
+    d = datetime.datetime(2018, 12, 8, 19, 41)
+    timezone = pytz.timezone('US/Central')
+    d_aware = timezone.localize(d)
+    er = CrashInfoRecord(rpt_id=180734111,
+                         investigated_by='TPR J B DOYLE #224',
+                         gps_latitude=36.5515555,
+                         gps_longitude=-89.809388,
+                         timestamp=d_aware,
+                         county='NEW MADRID',
+                         location='MO 153 SOUTH OF US 62',
+                         troop='E')
+    assert er == r
+
+
+def test_extract_mohipo_detail_veh_info_record(a_crash_report_detail, add_mohipo_to_sys_path):
+    from mohipo.screenscraping.extractions import extract_mohipo_vehicle_info, VehicleInfoRecord
+    tables_ = a_crash_report_detail.find_all('table')
+    _info = tables_[1]
+    trs = _info.select('tr')[1:]  # ignore header row
+    tds_ = trs[0].select('td')
+    rpt_id = 10
+    r = extract_mohipo_vehicle_info(tds_, rpt_id)
+    er = VehicleInfoRecord(rpt_id=10,
+                           veh_num=1,
+                           veh_description='2004 FORD EXPLORER',
+                           veh_damage='MODERATE',
+                           veh_disposition='LEFT ROADSIDE FOR REMOVAL',
+                           veh_driver_name='BANDA, MARIA',
+                           veh_driver_gender='FEMALE',
+                           veh_driver_age=47,
+                           veh_safety_device='YES',
+                           veh_driver_city='HOLCOMB',
+                           veh_driver_state='MO',
+                           veh_driver_insurance='DAIRYLAND AUTO',
+                           veh_direction='SOUTHBOUND')
+    assert er == r
+
+
+
+    #     , extract_mohipo_injury_info, \
     #     extract_mohipo_misc_info
-    #
-    # r = extract_mohipo_crash_info(tds_)
-    # #table 2
-    # #key is report id and veh_#
-    # rpt_id = r.rpt_id
-    # veh_info = tables_[1]
-    # trs = veh_info.select('tr')[1:]  # ignore header row
-    # len(trs)
-    # tds_ = trs[0].select('td')
-    # vr  = extract_mohipo_vehicle_info(tds_, rpt_id)
-    #
+
     # #table 3
     # inj_info = tables_[2]
     # trs = inj_info.select('tr')[1:]  # ignore header row

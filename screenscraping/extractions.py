@@ -108,6 +108,7 @@ def _process_date_fields(date_tag:Tag, time_tag:Tag,tz:str='US/Central',
 
 def _process_text_or_none(t:Tag, conv: Callable=None)->Union[None, str, Number]:
     field = t.text if t.text != '' else None
+    field = field.strip()
     return conv(field) if conv else field
 
 #TODO -> refactor using helper functions
@@ -124,7 +125,7 @@ def extract_mohipo_report(data_row: List[Tag])->ReportRecord:
     city_state = _process_text_or_none(data_row[3])
     if city_state:
         print(city_state)
-        if city_state.rfind(',') >= 0:
+        if city_state.rfind(',') >= 0: #Records with No States
             city, state = [t.strip() for t in city_state.split(",")]
         else:
             city, state = (city_state, None)
