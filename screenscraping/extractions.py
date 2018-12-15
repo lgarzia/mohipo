@@ -119,31 +119,23 @@ def extract_mohipo_report(data_row: List[Tag])->ReportRecord:
     regex = '.*ACC_RPT_NUM=(?P<rpt_num>.*)$'
     m = re.match(regex, rpt_url)
     rpt_id = m.group('rpt_num')
-    name = data_row[1].text
-    age = int(data_row[2].text) if data_row[2].text != '' else None
-    city_state = data_row[3].text if data_row[3].text != '' else None
+    name = _process_text_or_none(data_row[1])
+    age = _process_text_or_none(data_row[2], int)
+    city_state = _process_text_or_none(data_row[3])
     if city_state:
-        city, state = [t.strip() for t in city_state.split(",")]
+        print(city_state)
+        if city_state.rfind(',') >= 0:
+            city, state = [t.strip() for t in city_state.split(",")]
+        else:
+            city, state = (city_state, None)
     else:
         city, state = [None, None]
-    injury_status = data_row[4].text if data_row[4] != '' else None
-    pdte = '%m/%d/%Y'
-    pdte_time = '%m/%d/%Y_%I:%M%p'
-    date_ = data_row[5].text
-    time_ = data_row[6].text
-    if time_ != '' and date_ != '':
-        tz_u = datetime.datetime.strptime(date_ + '_' + time_, pdte_time)
-    elif date_ != '':
-        tz_u = datetime.datetime.strptime(date_ , pdte)
-    else:
-        tz_u = None
+    injury_status = _process_text_or_none(data_row[4])
+    timestamp = _process_date_fields(data_row[5], data_row[6])
 
-    timestamp = timezone('US/Central').localize(tz_u) if tz_u else None
-
-    crash_county = data_row[7].text if data_row[7].text != '' else None
-    crash_location = data_row[8].text if data_row[8].text != '' else None
-    troop = data_row[8].text if data_row[8].text != '' else None
-
+    crash_county = _process_text_or_none(data_row[7])
+    crash_location = _process_text_or_none(data_row[8])
+    troop = _process_text_or_none(data_row[9])
     return ReportRecord(rpt_id, rpt_url, name, age, city, state,
                         injury_status, timestamp, crash_county,
                         crash_location, troop)
@@ -237,3 +229,13 @@ def extract_mohipo_misc_info(data_row: List[Tag], rpt_id: int) -> InjuryInfoReco
     return MiscInfoRecord(
                 rpt_id=rpt_id,
                 misc_information=misc_information)
+
+
+def extract_all_rows(table:Tag, extractor:Callable)->List[NamedTuple]:
+    dataset = []
+    trs = table.select('tr')[1:]
+    for r in trs:
+        tds_ = r.select('td')
+        rc = extractor(data_row = tds_)
+        dataset.append(rc)
+    return dataset

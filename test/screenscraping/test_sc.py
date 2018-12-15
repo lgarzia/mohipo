@@ -180,18 +180,16 @@ def test_extract_mohipo_report_record(a_crash_report, add_mohipo_to_sys_path):
                                    timestamp=d_aware,
                                    crash_county='ST. LOUIS',
                                    crash_location='INTERSTATE 55 NORTHBOUND AT BAYLESS AVENUE',
-                                   troop='INTERSTATE 55 NORTHBOUND AT BAYLESS AVENUE')
-
-    print(row)
+                                   troop='C')
     assert row  == expected_result
 
-    #TODO build function to generate dataset
-    # Loop through each row
-    # base_report = []
-    # for r in trs:
-    #     rc = extract_mohipo_report(data_row = tds_)
-    #     base_report.append(rc)
-    # len(base_report)
+@pytest.mark.parse
+def test_extract_mohipo_all_report_record(a_crash_report, add_mohipo_to_sys_path):
+    from mohipo.screenscraping.extractions import extract_mohipo_report, extract_all_rows
+    table_ = a_crash_report.select('table')[0]
+    results = extract_all_rows(table_, extract_mohipo_report)
+    assert len(results) == 57
+
     #
     # #next step is linking to anchor
     # test_url = 'https://www.mshp.dps.missouri.gov/HP68/AccidentDetailsAction?ACC_RPT_NUM=180734111'
