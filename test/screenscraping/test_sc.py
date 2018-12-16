@@ -222,6 +222,7 @@ def test_extract_mohipo_detail_crash_info_record(a_crash_report_detail, add_mohi
     assert er == r
 
 
+@pytest.mark.parse
 def test_extract_mohipo_detail_veh_info_record(a_crash_report_detail, add_mohipo_to_sys_path):
     from mohipo.screenscraping.extractions import extract_mohipo_vehicle_info, VehicleInfoRecord
     tables_ = a_crash_report_detail.find_all('table')
@@ -246,6 +247,7 @@ def test_extract_mohipo_detail_veh_info_record(a_crash_report_detail, add_mohipo
     assert er == r
 
 
+@pytest.mark.parse
 def test_extract_mohipo_detail_inj_info_record(a_crash_report_detail, add_mohipo_to_sys_path):
     from mohipo.screenscraping.extractions import extract_mohipo_injury_info, InjuryInfoRecord
     tables_ = a_crash_report_detail.find_all('table')
@@ -267,6 +269,7 @@ def test_extract_mohipo_detail_inj_info_record(a_crash_report_detail, add_mohipo
                           disposition='TAKEN BY AMBULANCE TO SOUTHEAST HEALTH OF STODDARD \n      COUNTY')
     assert r == er
 
+@pytest.mark.parse
 def test_extract_mohipo_detail_misc_info_record(a_crash_report_detail, add_mohipo_to_sys_path):
     from mohipo.screenscraping.extractions import extract_mohipo_misc_info, MiscInfoRecord
     tables_ = a_crash_report_detail.find_all('table')
@@ -286,6 +289,7 @@ def a_crash_report_detail_empty():
     soup = BeautifulSoup(html_, features='lxml')
     return soup
 
+@pytest.mark.parse
 def test_extract_mohipo_detail_no_record(a_crash_report_detail_empty, add_mohipo_to_sys_path):
     from mohipo.screenscraping.extractions import _is_empty_result
     # test_url_no_data = 'https://www.mshp.dps.missouri.gov/HP68/AccidentDetailsAction?ACC_RPT_NUM=170781483'
@@ -296,3 +300,10 @@ def test_extract_mohipo_detail_no_record(a_crash_report_detail_empty, add_mohipo
 #TODO -> Integration test using Request
 #Next steps -> Loop through all details reports
 #Built multithread for Now - Asynchio Latter
+@pytest.mark.data
+def test_create_sqlalchemy_engine(add_mohipo_to_sys_path):
+    from mohipo.config import DevConfig
+    from mohipo.utils.db_util import _create_engine
+    from sqlalchemy.engine import Engine
+    engine = _create_engine(DevConfig)
+    assert isinstance(engine, Engine)

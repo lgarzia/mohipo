@@ -1,67 +1,67 @@
 """Module defines functions that'll take a row of data
 and return tuple records"""
 import re
-from typing import List, NamedTuple, Union, Callable
+from typing import List, NamedTuple, Union, Callable, Optional
 from numbers import Number
 import datetime
 
 from bs4 import Tag
 from pytz import timezone
 
-
+#TODO -> convert time to UTC before writing to DB
 class ReportRecord(NamedTuple):
     rpt_id: int
     rpt_url: str
-    name: Union[None, str]
-    age: Union[None, int]
-    city: Union[None, str]
-    state: Union[None, str]
-    injury_status: Union[None, str]
-    timestamp: Union[None, datetime.datetime]
-    crash_county: Union[None, str]
-    crash_location: Union[None, str]
-    troop: Union[None, str]
+    name: Optional[str]
+    age: Optional[int]
+    city: Optional[str]
+    state: Optional[str]
+    injury_status: Optional[str]
+    timestamp: Optional[datetime.datetime]
+    crash_county: Optional[str]
+    crash_location: Optional[str]
+    troop: Optional[str]
 
 
 class CrashInfoRecord(NamedTuple):
     rpt_id: int
-    investigated_by: Union[None, str]
-    gps_latitude: Union[None, float]
-    gps_longitude: Union[None, float]
-    timestamp: Union[None, datetime.datetime]
-    county: Union[None, str]
-    location: Union[None, str]
-    troop: Union[None, str]
+    investigated_by: Optional[str]
+    gps_latitude: Optional[float]
+    gps_longitude: Optional[float]
+    timestamp: Optional[datetime.datetime]
+    county: Optional[str]
+    location: Optional[str]
+    troop: Optional[str]
 
 
 class VehicleInfoRecord(NamedTuple):
     rpt_id: int
     veh_num: int
-    veh_description: Union[None,str]
-    veh_damage: Union[None,str]
-    veh_disposition: Union[None,str]
-    veh_driver_name: Union[None,str]
-    veh_driver_gender: Union[None,str]
-    veh_driver_age: Union[None,int]
-    veh_safety_device: Union[None,str]
-    veh_driver_city: Union[None,str]
-    veh_driver_state: Union[None,str]
-    veh_driver_insurance: Union[None,str]
-    veh_direction: Union[None,str]
+    veh_description: Optional[str]
+    veh_damage: Optional[str]
+    veh_disposition: Optional[str]
+    veh_driver_name: Optional[str]
+    veh_driver_gender: Optional[str]
+    veh_driver_age: Optional[int]
+    veh_safety_device: Optional[str]
+    veh_driver_city: Optional[str]
+    veh_driver_state: Optional[str]
+    veh_driver_insurance: Optional[str]
+    veh_direction: Optional[str]
 
 
 class InjuryInfoRecord(NamedTuple):
     rpt_id: int
     veh_num: int
-    name: Union[None, str]
-    gender: Union[None, str]
-    age: Union[None, int]
-    injury_type: Union[None, str]
-    safety_device: Union[None, str]
-    city: Union[None, str]
-    state: Union[None, str]
-    involvement: Union[None, str]
-    disposition: Union[None, str]
+    name: Optional[str]
+    gender: Optional[str]
+    age: Optional[int]
+    injury_type: Optional[str]
+    safety_device: Optional[str]
+    city: Optional[str]
+    state: Optional[str]
+    involvement: Optional[str]
+    disposition: Optional[str]
 
 
 class MiscInfoRecord(NamedTuple):
@@ -240,3 +240,4 @@ def extract_all_rows(table:Tag, extractor:Callable)->List[NamedTuple]:
         rc = extractor(data_row = tds_)
         dataset.append(rc)
     return dataset
+

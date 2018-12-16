@@ -2,3 +2,4 @@ venv/
 .idea/
 screenscraping/webdrivers/
 __pycache__/
+data/
