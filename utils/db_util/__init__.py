@@ -2,7 +2,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from typing import NamedTuple, MutableMapping, List, Union, Optional
 from sqlalchemy import Table, Column, DateTime, Integer, String, MetaData, Float, ForeignKey
+from sqlalchemy.engine.result import ResultProxy
 import inspect
+
 
 import datetime
 from types import MappingProxyType
@@ -48,6 +50,23 @@ def _create_table_definition(Record:NamedTuple, metadata:MetaData)->Table:
             satype = PYTHON_SQL_AL_DM[col_type]
         col_list.append(Column(col_name, satype))
     return Table(table_name, metadata, *col_list)
+
+def _generate_metadata(engine:Engine)->MetaData:
+    metadata = MetaData()
+    metadata.reflect(bind=engine)
+    return metadata
+
+
+def insert_record(table_name: str, record: NamedTuple,
+                    metadata: MetaData, engine: Engine)->ResultProxy:
+    table_ = metadata.tables[table_name]
+    ins = table_.insert().values(record)
+    conn = engine.connect() #TODO -> test success
+    return conn.execute(ins)
+
+#TODO -> build this out
+#def truncate_table():
+#    DELETE FROM  table_name;
 
 #TODO move to test
 #metadata = MetaData() #Call passes in Metadata

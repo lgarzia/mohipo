@@ -349,4 +349,43 @@ def test_build_sqlalch_tables(a_rcdtype, add_mohipo_to_sys_path):
     assert isinstance(table_, Table)
 
 
-#Goal interrogate module
+@pytest.mark.data
+def test_generate_metadata(add_mohipo_to_sys_path):
+    from mohipo.utils.db_util import _generate_metadata
+    from mohipo.config import DevConfig
+    #Goal -> pass config - get MetaData
+    #Pass in table name to get table
+    m = _generate_metadata(DevConfig())
+    print(m.tables.keys())
+    assert len(m.tables) > 0
+
+#Test Insert into table
+#TODO -> all; just doing one to move project along
+@pytest.mark.data
+def test_insert_record(add_mohipo_to_sys_path):
+    from mohipo.screenscraping.extractions import CrashInfoRecord
+    from mohipo.utils.db_util import _generate_metadata, _create_engine, insert_record
+    from mohipo.config import DevConfig
+    import datetime
+    import pytz
+
+    #Build Record
+    d = datetime.datetime(2018, 12, 8, 19, 41)
+    timezone = pytz.timezone('US/Central')
+    d_aware = timezone.localize(d)
+    TABLE_RECORD = CrashInfoRecord(rpt_id=180734111,
+                         investigated_by='TPR J B DOYLE #224',
+                         gps_latitude=36.5515555,
+                         gps_longitude=-89.809388,
+                         timestamp=d_aware,
+                         county='NEW MADRID',
+                         location='MO 153 SOUTH OF US 62',
+                         troop='E')
+    TABLE_NAME = 'CrashInfoRecord'
+    engine = _create_engine(DevConfig())
+    m = _generate_metadata(engine)
+    result = insert_record(TABLE_NAME, TABLE_RECORD, m, engine)
+#    print('printing class of result')
+#    print(result.__class__)
+#    print(dir(result))
+    assert True is True
