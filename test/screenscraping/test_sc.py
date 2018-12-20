@@ -307,3 +307,46 @@ def test_create_sqlalchemy_engine(add_mohipo_to_sys_path):
     from sqlalchemy.engine import Engine
     engine = _create_engine(DevConfig)
     assert isinstance(engine, Engine)
+
+
+PDtypes = namedtuple('PDtypes', ['name', 'class_'])
+pdtypes_to_try = [PDtypes('int', int), PDtypes('float', float), PDtypes('datetime', datetime.datetime),
+                  PDtypes('string', str)]
+
+@pytest.fixture(params=pdtypes_to_try, ids= [n[0] for n in pdtypes_to_try])
+def a_pdtypes(request):
+    return request.param #Boilerplate
+
+@pytest.mark.data
+def test_mapping_ptypes_to_sqlalchemy(a_pdtypes, add_mohipo_to_sys_path):
+    from mohipo.utils.db_util import PYTHON_SQL_AL_DM
+    res = PYTHON_SQL_AL_DM[a_pdtypes.class_]
+    assert res.__module__ == 'sqlalchemy.sql.sqltypes'
+
+
+rcdtypes_to_try = ['CrashInfoRecord', 'InjuryInfoRecord', 'MiscInfoRecord',
+                   'ReportRecord', 'VehicleInfoRecord']
+
+@pytest.fixture(params=rcdtypes_to_try, ids= [n for n in rcdtypes_to_try])
+def a_rcdtype(request):
+    return request.param #Boilerplate
+
+@pytest.mark.data
+def test_build_sqlalch_tables(a_rcdtype, add_mohipo_to_sys_path):
+    from mohipo.screenscraping import extractions
+    from mohipo.utils.db_util import _create_table_definition
+    from sqlalchemy import MetaData, Table
+    from inspect import getmembers
+    metadata = MetaData()
+    recordtypes = {name: value for name, value in getmembers(extractions)
+                   if name.endswith('Record')}
+    rclass = recordtypes[a_rcdtype]
+    table_ = _create_table_definition(rclass, metadata)
+    print(table_.columns)
+    columns = table_.c
+    for c in columns:
+        print(c.name, c.type)
+    assert isinstance(table_, Table)
+
+
+#Goal interrogate module

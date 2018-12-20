@@ -14,5 +14,11 @@ techniques like GIS.
 * Build a data pipeline to refresh data on regular cadence
 * Publish data in near real time to update view
 ***
+
+To create initial database
+````bash
+    python .data/db_initializer.py
+````
 #######Current Status
-* Working on scraping initial load 
+* Working on interface to SQLAlchemy
+
