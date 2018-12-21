@@ -16,9 +16,15 @@ techniques like GIS.
 ***
 
 To create initial database
+-From mohipo directory
 ````bash
-    python .data/db_initializer.py
+    python ./data/db_initializer.py
 ````
+
+Initial Data Load
+```bash
+    python ./screenscraping/bulk_load.py
+```
 #######Current Status
 * Working on interface to SQLAlchemy
 

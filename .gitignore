@@ -2,4 +2,6 @@ venv/
 .idea/
 screenscraping/webdrivers/
 __pycache__/
-data/
+data/htmls.pkl
+data/mohipo.db
+

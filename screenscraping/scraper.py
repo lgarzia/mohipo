@@ -67,9 +67,11 @@ class Scraper:
     def _navigate_to_url(self):
         self.browser.get(self.url)
 
-    def _populate_form(self):
-        self._navigate_to_url()
-        for vc in self.final_instruction_plan[-1]:
+    def _populate_form(self, vcl: List[ValueClass]):
+        '''Refactor'''
+#        self._navigate_to_url()
+#        for vc in self.final_instruction_plan[-1]:
+        for vc in vcl:
             if vc.form_element_type == 'select':
                 if vc.allow_multiple:
                     #TODO -> build this
@@ -78,11 +80,42 @@ class Scraper:
                     element = Select(self.browser.find_element_by_xpath(vc.xpath))
                     element.select_by_value(vc.values)
             #Completed form entry -> Bare bones for scenario 1
-            print(self._instructions.get_submit_id())
-            submit = self.browser.find_element_by_xpath(self._instructions.get_submit_id())
-            submit.click()
+#            print(self._instructions.get_submit_id())
+#            submit = self.browser.find_element_by_xpath(self._instructions.get_submit_id())
+#            submit.click()
             html_ = self.browser.page_source
             #scrape_table(html)
+
+    def collect_base_htmls(self):
+        import time
+        self._navigate_to_url()
+        print('navigated')
+        all_html = []
+        for vc in self.final_instruction_plan:
+            print(vc, type(vc))
+            print(self.browser.current_url)
+            assert self.url == self.browser.current_url
+            self._populate_form(vc)
+            submit = self.browser.find_element_by_xpath(self._instructions.get_submit_id())
+            submit.click()
+            time.sleep(2)
+            #TODO Terrible Code -> need more resiliency... wrap in retry decorator -> think hwo to write results one at time
+            if self.url != self.browser.current_url:
+                print('catching my breath')
+                time.sleep(5)
+                self.browser.back()
+                time.sleep(2)
+                self._populate_form(vc)
+                submit = self.browser.find_element_by_xpath(self._instructions.get_submit_id())
+                submit.click()
+                time.sleep(2)
+            html_ = self.browser.page_source
+            all_html.append(html_) #TODO would like to capture dates
+            print(self.url)
+            time.sleep(5) #Site must be throttled -> Wait between each call
+            self.browser.back()
+        return all_html
+
     def __str__(self):
         return 'a_string' #TODO
 
