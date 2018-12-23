@@ -11,17 +11,22 @@ Attributes:
 '''
 import os
 import sys
-sys.path.append(os.sep.join(os.getcwd().split(os.sep)[:-1]))
+#sys.path.append(os.sep.join(os.getcwd().split(os.sep)[:-1]))
+sys.path.append(r"C:\Users\lgarzia\Documents\apps")
 
 import pickle
 from typing import Union
 from selenium.webdriver import Chrome, Firefox
+from bs4 import BeautifulSoup
 from mohipo.screenscraping import get_browser
 from mohipo.config import DevConfig
 from mohipo.utils.dates_util import get_last_range_date
 BROWSER_VERSION = 'chrome'
 from mohipo.screenscraping.mohipo_form_instruction import MohipoFormInstruction
 from mohipo.screenscraping.scraper import Scraper
+from mohipo.screenscraping.extractions import extract_all_rows, extract_mohipo_report, _is_empty_result, extract_mohipo_report
+from mohipo.utils.db_util import _create_engine, _generate_metadata, insert_record
+
 
 def get_url(webdriver_instance:Union[Chrome, Firefox], url_to_scrape:str)->Union[Chrome, Firefox]:
     webdriver_instance.get(url_to_scrape)
@@ -55,3 +60,27 @@ if __name__ == '__main__':
         htmlsp = pickle.load(f)
 
     assert htmlsp == HTMLS
+
+    #Extract and load into sqliteDB
+    table_name = 'ReportRecord'
+    engine = _create_engine(DevConfig)
+    metadata = _generate_metadata(engine)
+    #delete from ReportRecord
+    ppath = r"C:\Users\lgarzia\Documents\apps\mohipo\data\htmls.pkl"
+    with open(ppath, 'rb') as f:
+        htmlsp = pickle.load(f)
+
+    for t in htmlsp:
+        soup = BeautifulSoup(t, 'lxml')
+        tables_ = soup.findAll('table')
+        if _is_empty_result(tables_):
+            print('Empty HTML file Record') #TODO -> have a key print?
+        else:
+            records = extract_all_rows(tables_[0], extract_mohipo_report) #TODO remove magic number
+            for record in records:
+                table_name = 'ReportRecord'
+                result = insert_record(table_name, record, metadata, engine)
+
+#**********************************************************************************************************
+    #Next step is getting all unique rpt_ids
+    #select distinct rpt_id from ReportRecord

@@ -107,9 +107,12 @@ def _process_date_fields(date_tag:Tag, time_tag:Tag,tz:str='US/Central',
 
 
 def _process_text_or_none(t:Tag, conv: Callable=None)->Union[None, str, Number]:
-    field = t.text if t.text != '' else None
-    field = field.strip()
-    return conv(field) if conv else field
+    field = t.text.strip() if t.text != '' else None
+    try:
+        return conv(field) if conv else field
+    except ValueError:
+        return None #Indicate invalid data
+    return
 
 #TODO -> refactor using helper functions
 def extract_mohipo_report(data_row: List[Tag])->ReportRecord:
@@ -126,7 +129,7 @@ def extract_mohipo_report(data_row: List[Tag])->ReportRecord:
     if city_state:
         print(city_state)
         if city_state.rfind(',') >= 0: #Records with No States
-            city, state = [t.strip() for t in city_state.split(",")]
+            city, state, *_ = [t.strip() for t in city_state.split(",")] #TODO regression test bad data -> HARDY, ARKANSAS  HARDY, ARKANSAS
         else:
             city, state = (city_state, None)
     else:
@@ -232,7 +235,7 @@ def extract_mohipo_misc_info(data_row: List[Tag], rpt_id: int) -> InjuryInfoReco
                 misc_information=misc_information)
 
 
-def extract_all_rows(table:Tag, extractor:Callable)->List[NamedTuple]:
+def extract_all_rows(table: Tag, extractor: Callable)->List[NamedTuple]:
     dataset = []
     trs = table.select('tr')[1:]
     for r in trs:
