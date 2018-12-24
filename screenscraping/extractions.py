@@ -85,6 +85,16 @@ def _is_empty_result(tables_:List[Tag])->bool:
             return False
     return False #Default
 
+
+def get_splitter(value: str)->str:
+    if ',' in value:
+        return ','
+    elif '/' in value:
+        return '/'
+    else:
+        print(f"Unknown Splitter {value}")
+        return '****'
+
 #TODO -> split into more specific functions
 def _process_date_fields(date_tag:Tag, time_tag:Tag,tz:str='US/Central',
                          date_fmt:str='%m/%d/%Y', datetime_fmt:str='%m/%d/%Y_%I:%M%p'
@@ -176,7 +186,12 @@ def extract_mohipo_vehicle_info(data_row: List[Tag], rpt_id:int)->VehicleInfoRec
     veh_safety_device = _process_text_or_none(data_row[7])
     veh_location = _process_text_or_none(data_row[8])
     if veh_location:
-        veh_driver_city, veh_driver_state = veh_location.split(',')
+        res_ = veh_location.split(get_splitter(veh_location))
+        if len(res_) > 1:
+            veh_driver_city, veh_driver_state, *_ = [r.strip() for r in res_]
+        else:
+            veh_driver_city = res_[0].strip()
+            veh_driver_state = None
     else:
         veh_driver_city, veh_driver_state = None, None
     veh_driver_insurance = _process_text_or_none(data_row[9])
@@ -192,8 +207,8 @@ def extract_mohipo_vehicle_info(data_row: List[Tag], rpt_id:int)->VehicleInfoRec
         veh_driver_gender=veh_driver_gender,
         veh_driver_age=veh_driver_age,
         veh_safety_device=veh_safety_device,
-        veh_driver_city=veh_driver_city.strip(),
-        veh_driver_state=veh_driver_state.strip(),
+        veh_driver_city=veh_driver_city,
+        veh_driver_state=veh_driver_state,
         veh_driver_insurance=veh_driver_insurance,
         veh_direction=veh_direction)
 
@@ -207,7 +222,12 @@ def extract_mohipo_injury_info(data_row: List[Tag], rpt_id: int) -> InjuryInfoRe
     safety_device = _process_text_or_none(data_row[5])
     location = _process_text_or_none(data_row[6])
     if location:
-        city, state = location.split(',')
+        res_ = location.split(get_splitter(location))
+        if len(res_) > 1:
+            city, state, *_ = [r.strip() for r in res_]
+        else:
+            city = res_[0].strip()
+            state = None
     else:
         city, state = None, None
     involvement = _process_text_or_none(data_row[7])
@@ -235,9 +255,10 @@ def extract_mohipo_misc_info(data_row: List[Tag], rpt_id: int) -> InjuryInfoReco
                 misc_information=misc_information)
 
 
-def extract_all_rows(table: Tag, extractor: Callable)->List[NamedTuple]:
+def extract_all_rows(table: Tag, extractor: Callable, has_header=True)->List[NamedTuple]:
     dataset = []
-    trs = table.select('tr')[1:]
+    st_row = 1 if has_header else 0
+    trs = table.select('tr')[st_row:]
     for r in trs:
         tds_ = r.select('td')
         rc = extractor(data_row = tds_)
