@@ -10,6 +10,16 @@ class Config:
     def __repr__(self):
         return str([(k, v) for k, v in vars(Config).items() if not k.startswith('__')])
 
+#   From Miguel's tutorial -> hook if want to add modifications
+    @staticmethod
+    def init_app(app):
+        pass
+
 
 class DevConfig(Config):
     pass
+
+config = {
+    'development': DevConfig,
+    'default': DevConfig
+}

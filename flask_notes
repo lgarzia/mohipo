@@ -1,0 +1,5 @@
+Leveraging Miguel Grinbergs - recommendation for layout
+https://github.com/miguelgrinberg/flasky/tree/master/app
+
+set FLASK_APP=mohipo.py
+set FLASK_ENV=development
