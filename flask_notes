@@ -8,3 +8,4 @@ pip install Flask-Bootstrap4
 https://github.com/JeffCarpenter/flask-bootstrap4
 
 pip install flask-moment
+pip install flask-wtf
