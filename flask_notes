@@ -5,3 +5,6 @@ set FLASK_APP=mohipo.py
 set FLASK_ENV=development
 
 pip install Flask-Bootstrap4
+https://github.com/JeffCarpenter/flask-bootstrap4
+
+pip install flask-moment
