@@ -4,6 +4,7 @@ from .forms import NameForm
 from . import main
 from ..models import User, Role
 from .. import db
+from ..email import send_email
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -24,6 +25,8 @@ def index():
             user = User(username=form.name.data, role_id=role_id)
             db.session.add(user)
             db.session.commit()
+            send_email(to='lgarzia@yahoo.com', subject='Testing emails',
+                       template='mail/new_user', name="LUKE")
             print(f"user_id is {user.id}")
         print(f"user is {user}")
         form.name.data = ''
