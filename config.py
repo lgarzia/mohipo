@@ -4,8 +4,10 @@ basedir = os.path.abspath(os.path.dirname(__file__)) #return directory of mohipo
 
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or 'sqlite:///'+os.path.join(basedir, 'data', 'mohipo.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or 'sqlite:///'+os.path.join(basedir, 'data', 'mohipo_app.db')
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     MOHIPO_SEARCH_PAGE = os.environ.get('MOHIPO_SEARCH_PAGE') or 'https://www.mshp.dps.missouri.gov/HP68/SearchAction'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     def __repr__(self):
         return str([(k, v) for k, v in vars(Config).items() if not k.startswith('__')])
