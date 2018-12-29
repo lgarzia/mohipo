@@ -5,7 +5,7 @@ shares all initial crash reports data to general public. The data isn't
 deep but very wide and offers a nice playground for developers/analyst to try out new
 techniques like GIS. 
 ***
-######Project Goals
+###### Project Goals
 * Scrape data to build dataset to expand past 1 year
 * Generate a Flask app to host content off data
 * Develop Flask API to allow others to consume data easily
@@ -25,6 +25,6 @@ Initial Data Load
 ```bash
     python ./screenscraping/bulk_load.py
 ```
-#######Current Status
-* Working on interface to SQLAlchemy
+####### Current Status
+* Incorporating email 
 
