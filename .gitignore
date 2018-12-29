@@ -4,4 +4,6 @@ screenscraping/webdrivers/
 __pycache__/
 data/htmls.pkl
 data/mohipo.db
-
+flask_notes
+.pytest_cache/
+__notes/

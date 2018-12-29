@@ -8,6 +8,12 @@ class Config:
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     MOHIPO_SEARCH_PAGE = os.environ.get('MOHIPO_SEARCH_PAGE') or 'https://www.mshp.dps.missouri.gov/HP68/SearchAction'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    ADMINS = ['garzia.luke@gmail.com']
 
     def __repr__(self):
         return str([(k, v) for k, v in vars(Config).items() if not k.startswith('__')])
