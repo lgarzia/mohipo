@@ -9,6 +9,7 @@ https://github.com/JeffCarpenter/flask-bootstrap4
 
 pip install flask-moment
 pip install flask-wtf
+#https://wtforms.readthedocs.io/en/stable/
 pip install flask-sqlalchemy
 # key -> SQLALCHEMY_DATABASE_URI
 # key -> SQLALCHEMY_COMMIT_ON_TEARDOWN
