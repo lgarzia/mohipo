@@ -25,6 +25,6 @@ Initial Data Load
 ```bash
     python ./screenscraping/bulk_load.py
 ```
-####### Current Status
+###### Current Status
 * Incorporating email 
 
