@@ -4,9 +4,9 @@ basedir = os.path.abspath(os.path.dirname(__file__)) #return directory of mohipo
 
 
 class Config:
+    MOHIPO_SEARCH_PAGE = os.environ.get('MOHIPO_SEARCH_PAGE') or 'https://www.mshp.dps.missouri.gov/HP68/SearchAction'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or 'sqlite:///'+os.path.join(basedir, 'data', 'mohipo_app.db')
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-    MOHIPO_SEARCH_PAGE = os.environ.get('MOHIPO_SEARCH_PAGE') or 'https://www.mshp.dps.missouri.gov/HP68/SearchAction'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
@@ -27,7 +27,15 @@ class Config:
 class DevConfig(Config):
     pass
 
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or 'sqlite:///'+os.path.join(basedir, 'data', 'mohipo_test_app.db')
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+
 config = {
     'development': DevConfig,
-    'default': DevConfig
+    'default': DevConfig,
+    'testing':TestingConfig
 }
