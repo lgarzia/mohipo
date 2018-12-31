@@ -5,6 +5,13 @@ from . import main
 from ..models import User, Role
 from .. import db
 from ..email import send_email
+from flask_login import login_required # Protect Routes
+
+@main.route('/secret')
+@login_required
+def secret():
+    return 'Only authenticated users are allowed'
+
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
