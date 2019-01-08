@@ -13,13 +13,16 @@ def verify_password(email, password):
         print(f"in empty email")
         g.current_user = None #AnonymousUser()
         return True
-    if email != 'luke':
-        print(f"Not Luke's Email")
-        return False #-> triggers the @auth.error_handler
-    else:
-        print(f"Luke's Email")
+    if email == 'eyJhbGciOiJIUzUxMiIsImlhdCI6MTU0NjkxMDc2MSwiZXhwIjoxNTQ2OTE0MzYxfQ.eyJlbWFpbCI6Ikx1a2UifQ.sg_aReO8z-Ak6r3hc3BV__052ZpUfgZwpzlbAGeafa1R11WsYpqsJEKN0X_99Gkb30JJQ8i44msSmV_rB5DY2w':
         g.current_user = 'Luke'
         return True
+    if password=='luke' and email== 'luke':
+        print(f"Not Luke's Email")
+        g.current_user = 'Luke'
+        return True #-> triggers the @auth.error_handler
+    else:
+        print(f"Luke's Email")
+        return False
 
 
 @auth.error_handler
@@ -38,3 +41,16 @@ def before_request():
         response.status_code = 401
         return response
 
+
+# Try building bare bones Token Based Authentication
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+
+
+# Part 1-> get token
+@api.route('/token')
+def get_token():
+    print('in getting token')
+    if g.current_user == 'Luke':
+        s = Serializer('My Secret Key', 3600)
+        token = s.dumps({'email': 'Luke'}).decode('utf-8')
+        return jsonify({'token': token, 'expiration': 3600})
